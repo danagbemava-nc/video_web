@@ -1,146 +1,87 @@
-// import 'package:video_player/video_player.dart';
-// import 'package:flutter/material.dart';
-
-// void main() => runApp(VideoApp());
-
-// class VideoApp extends StatefulWidget {
-//   @override
-//   _VideoAppState createState() => _VideoAppState();
-// }
-
-// class _VideoAppState extends State<VideoApp> {
-//   late VideoPlayerController _controller;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _controller = VideoPlayerController.network(
-//         'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-//         httpHeaders: {
-//           "origin": "http://my-url.net",
-//         })
-//       ..initialize().then((_) {
-//         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-//         setState(() {});
-//       });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Video Demo',
-//       home: Scaffold(
-//         body: Center(
-//           child: _controller.value.isInitialized
-//               ? AspectRatio(
-//                   aspectRatio: _controller.value.aspectRatio,
-//                   child: VideoPlayer(_controller),
-//                 )
-//               : Container(),
-//         ),
-//         floatingActionButton: FloatingActionButton(
-//           onPressed: () {
-//             setState(() {
-//               _controller.value.isPlaying
-//                   ? _controller.pause()
-//                   : _controller.play();
-//             });
-//           },
-//           child: Icon(
-//             _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   @override
-//   void dispose() {
-//     super.dispose();
-//     _controller.dispose();
-//   }
-// }
-
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-GetIt sl = GetIt.I;
-
-Future<void> setupLocators() async {
-  final SharedPreferences pref = await SharedPreferences.getInstance();
-
-  sl.registerSingleton<SharedPreferencesService>(
-      SharedPreferencesService(pref));
+void main() {
+  runApp(const MyApp());
 }
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
-  await setupLocators();
-
-  runApp(
-    MaterialApp(
-      home: TestScreen(),
-    ),
-  );
-}
-
-class SharedPreferencesService {
-  final SharedPreferences _pref;
-
-  final String kUsername = 'username';
-
-  SharedPreferencesService(this._pref);
-
-  Future<void> setUsername(String username) async {
-    await _pref.setString(kUsername, username);
-  }
-
-  String getUsername() {
-    return _pref.getString(kUsername) ?? '';
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Test',
+      theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          fontFamily: "Noto Sans JP"),
+      home: TestHome(),
+    );
   }
 }
 
-class TestScreen extends StatefulWidget {
-  TestScreen({Key? key}) : super(key: key);
+class TestHome extends StatefulWidget {
+  TestHome({Key? key}) : super(key: key);
 
   @override
-  _TestScreenState createState() => _TestScreenState();
+  _TestHomeState createState() => _TestHomeState();
 }
 
-class _TestScreenState extends State<TestScreen> {
-  @override
-  void initState() {
-    super.initState();
+class _TestHomeState extends State<TestHome> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      this._selectedIndex = index;
+    });
+  }
+
+  Widget _getFooter() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      items: [
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.home,
+            color: _selectedIndex == 0 ? Colors.black87 : Colors.black26,
+          ),
+          label: "Home",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.account_circle,
+            color: _selectedIndex == 1 ? Colors.black87 : Colors.black26,
+          ),
+          label: "account",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.add,
+            color: _selectedIndex == 2 ? Colors.black87 : Colors.black26,
+          ),
+          label: "add",
+        ),
+      ],
+      currentIndex: _selectedIndex,
+      onTap: _onItemTapped,
+      backgroundColor: Colors.white,
+      selectedItemColor: Colors.black45,
+      unselectedItemColor: Colors.black26,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _buildBody(),
-      floatingActionButton: FloatingActionButton(
-        child: Text('+'),
-        onPressed: () {
-          sl.get<SharedPreferencesService>().setUsername('Nexus');
-          setState(() {});
+    return WillPopScope(
+        onWillPop: () {
+          return Future.value(false);
         },
-      ),
-    );
-  }
-
-  Widget _buildBody() {
-    return Container(
-      child: Center(
-        child: Text(
-          'Username: ${sl.get<SharedPreferencesService>().getUsername()}',
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+        child: Scaffold(
+          body: Container(
+            color: Colors.blue,
+          ),
+          bottomNavigationBar: _getFooter(),
+        ));
   }
 }
